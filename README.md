@@ -64,12 +64,12 @@ JSON object of the created game, including its ID.
 `PUT /api/game/update?id={ID}`
 
 **Body:**
-```
+```json
 {
-    "name": "Stardew Valley",
-    "console": "PC",
-    "genre": "Indie",
-    "datePub": "2016-02-26"
+ "name": "Stardew Valley",
+ "console": "PC",
+ "genre": "Indie",
+ "datePub": "2016-02-26"
 }
 
 ```
