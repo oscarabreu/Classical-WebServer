@@ -9,99 +9,114 @@ import (
 	"sync"
 )
 
-type Form struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	Address string `json:"address"`
+// Define a struct to represent a Game.
+type Game struct {
+	ID      int    `json:"id"`       // Unique identifier for the game.
+	Name    string `json:"name"`     // Name of the game.
+	Console string `json:"console"`  // Gaming console/platform.
+	Genre   string `json:"genre"`    // Genre or category of the game.
+	DatePub string `json:"datePub"`  // Release date of the game.
 }
 
-var forms = make(map[int]Form)
+// Create a map to store Game objects, an ID counter, and a mutex for synchronization.
+var Games = make(map[int]Game)
 var idCounter int
-var formsMutex sync.Mutex
+var GamesMutex sync.Mutex
 
-func getAllFormsHandler(w http.ResponseWriter, r *http.Request) {
-	formsMutex.Lock()
-	defer formsMutex.Unlock()
+// Define an HTTP handler function to get all games and return them as JSON.
+func getAllGamesHandler(w http.ResponseWriter, r *http.Request) {
+	GamesMutex.Lock() // Lock the mutex to protect concurrent access to the Games map.
+	defer GamesMutex.Unlock() // Ensure the mutex is unlocked when the function exits.
 
-	var formList []Form
-	for _, form := range forms {
-		formList = append(formList, form)
+	var GameList []Game
+	for _, Game := range Games {
+		GameList = append(GameList, Game)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(formList)
+	json.NewEncoder(w).Encode(GameList)
 }
 
-func getFormHandler(w http.ResponseWriter, r *http.Request) {
+// Define an HTTP handler function to get a specific game by ID and return it as JSON.
+func getGameHandler(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 
-	if form, exists := forms[id]; exists {
+	if Game, exists := Games[id]; exists {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(form)
+		json.NewEncoder(w).Encode(Game)
 	} else {
-		http.Error(w, "Form not found", http.StatusNotFound)
+		// Return an HTTP error with a 404 status code if the game with the specified ID doesn't exist.
+		http.Error(w, "Game not found", http.StatusNotFound)
 	}
 }
 
-func createFormHandler(w http.ResponseWriter, r *http.Request) {
-	var newForm Form
-	if err := json.NewDecoder(r.Body).Decode(&newForm); err != nil {
+// Define an HTTP handler function to create a new game and add it to the map.
+func createGameHandler(w http.ResponseWriter, r *http.Request) {
+	var newGame Game
+	if err := json.NewDecoder(r.Body).Decode(&newGame); err != nil {
+		// Return an HTTP error with a 400 status code if the request body is not valid JSON.
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	formsMutex.Lock()
+	GamesMutex.Lock() // Lock the mutex to protect concurrent access to the Games map.
 	idCounter++
-	newForm.ID = idCounter
-	forms[idCounter] = newForm
-	formsMutex.Unlock()
+	newGame.ID = idCounter
+	Games[idCounter] = newGame
+	GamesMutex.Unlock() // Unlock the mutex to allow other operations.
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newForm)
+	json.NewEncoder(w).Encode(newGame)
 }
 
-func updateFormHandler(w http.ResponseWriter, r *http.Request) {
+// Define an HTTP handler function to update an existing game by ID.
+func updateGameHandler(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 
-	var updatedForm Form
-	if err := json.NewDecoder(r.Body).Decode(&updatedForm); err != nil {
+	var updatedGame Game
+	if err := json.NewDecoder(r.Body).Decode(&updatedGame); err != nil {
+		// Return an HTTP error with a 400 status code if the request body is not valid JSON.
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	formsMutex.Lock()
-	defer formsMutex.Unlock()
+	GamesMutex.Lock() // Lock the mutex to protect concurrent access to the Games map.
+	defer GamesMutex.Unlock() // Ensure the mutex is unlocked when the function exits.
 
-	if _, exists := forms[id]; exists {
-		updatedForm.ID = id
-		forms[id] = updatedForm
+	if _, exists := Games[id]; exists {
+		updatedGame.ID = id
+		Games[id] = updatedGame
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(updatedForm)
+		json.NewEncoder(w).Encode(updatedGame)
 	} else {
-		http.Error(w, "Form not found", http.StatusNotFound)
+		// Return an HTTP error with a 404 status code if the game with the specified ID doesn't exist.
+		http.Error(w, "Game not found", http.StatusNotFound)
 	}
 }
 
-func deleteFormHandler(w http.ResponseWriter, r *http.Request) {
+// Define an HTTP handler function to delete a game by ID.
+func deleteGameHandler(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 
-	formsMutex.Lock()
-	defer formsMutex.Unlock()
+	GamesMutex.Lock() // Lock the mutex to protect concurrent access to the Games map.
+	defer GamesMutex.Unlock() // Ensure the mutex is unlocked when the function exits.
 
-	if _, exists := forms[id]; exists {
-		delete(forms, id)
+	if _, exists := Games[id]; exists {
+		delete(Games, id) // Delete the game with the specified ID from the map.
 		w.WriteHeader(http.StatusNoContent)
 	} else {
-		http.Error(w, "Form not found", http.StatusNotFound)
+		// Return an HTTP error with a 404 status code if the game with the specified ID doesn't exist.
+		http.Error(w, "Game not found", http.StatusNotFound)
 	}
 }
 
 func main() {
-	http.HandleFunc("/api/forms", getAllFormsHandler)
-	http.HandleFunc("/api/form", getFormHandler)
-	http.HandleFunc("/api/form/create", createFormHandler)
-	http.HandleFunc("/api/form/update", updateFormHandler)
-	http.HandleFunc("/api/form/delete", deleteFormHandler)
+	// Define HTTP routes and handlers for various CRUD operations.
+	http.HandleFunc("/api/Games", getAllGamesHandler)
+	http.HandleFunc("/api/Game", getGameHandler)
+	http.HandleFunc("/api/Game/create", createGameHandler)
+	http.HandleFunc("/api/Game/update", updateGameHandler)
+	http.HandleFunc("/api/Game/delete", deleteGameHandler)
 
 	fmt.Print("Starting server at port 8080\n")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
