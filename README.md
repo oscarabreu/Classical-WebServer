@@ -1,14 +1,14 @@
-# RESTful API for Form Management
+# RESTful API for Object Management
 
-This project provides a RESTful API for managing form submissions. It supports basic CRUD (Create, Read, Update, Delete) operations for form data, with in-memory storage.
+This project provides a RESTful API for managing game submissions. It supports basic CRUD (Create, Read, Update, Delete) operations for JSON objects, with in-memory storage.
 
 ## Features
 
-- Retrieve all submitted forms.
-- Retrieve a specific form submission by ID.
-- Submit a new form.
-- Update an existing form submission by ID.
-- Delete a form submission by ID.
+- Retrieve all submitted games.
+- Retrieve a specific game submission by ID.
+- Submit a new game.
+- Update an existing game submission by ID.
+- Delete a game submission by ID.
 
 ## Prerequisites
 
@@ -24,56 +24,62 @@ This project provides a RESTful API for managing form submissions. It supports b
 
 ## API Endpoints
 
-### Retrieve All Forms
+### Retrieve All games
 
 **Request:** 
-`GET /api/forms`
+`GET /api/games`
 
 **Response:** 
-JSON array of all forms.
+JSON array of all games.
 
-### Retrieve Specific Form
+### Retrieve Specific game
 
 **Request:** 
-`GET /api/form?id={ID}`
+`GET /api/game?id={ID}`
 
 **Response:** 
-JSON object of the form with the specified ID.
+JSON object of the game with the specified ID.
 
-### Submit New Form
+### Submit New game
 
 **Request:** 
-`POST /api/form/create`
+`POST /api/game/create`
 
 **Body:** 
 ```json
 {
- "name": "John Doe",
- "address": "123 Main St"
+ "name": "The Legend of Zelda: Skyward Sword",
+ "console": "Nintendo Switch",
+ "genre": "Adventure",
+ "datePub": "2023-05-12"
 }
+
 ```
 **Response:**
-JSON object of the created form, including its ID.
+JSON object of the created game, including its ID.
 
-### Update Existing Form
+### Update Existing game
 
 **Request:**
-`PUT /api/form/update?id={ID}`
+`PUT /api/game/update?id={ID}`
 
 **Body:**
 ```
 {
-    "name": "Jane Doe",
-    "address": "456 Elm St"
+    "name": "Stardew Valley",
+    "console": "PC",
+    "genre": "Indie",
+    "datePub": "2016-02-26"
 }
+
 ```
 **Response:**
-JSON object of the updated form.
+JSON object of the updated game.
 
-### Delete Form
+### Delete game
 
 **Request**:
-`DELETE /api/form/delete?id={ID}`
+`DELETE /api/game/delete?id={ID}`
 
 **Response**:
 204 No Content if successful.
@@ -82,6 +88,3 @@ JSON object of the updated form.
 
 The current implementation uses in-memory storage, meaning data won't persist across server restarts. For a more robust solution, consider integrating a database.
 
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change
